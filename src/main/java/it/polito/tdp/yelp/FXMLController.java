@@ -5,9 +5,12 @@
 package it.polito.tdp.yelp;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.yelp.db.YelpDao;
 import it.polito.tdp.yelp.model.Model;
+import it.polito.tdp.yelp.model.User;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -18,6 +21,7 @@ import javafx.scene.control.TextField;
 public class FXMLController {
 	
 	private Model model;
+	YelpDao dao = new YelpDao();
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -38,13 +42,13 @@ public class FXMLController {
     private TextField txtX2; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbAnno"
-    private ComboBox<?> cmbAnno; // Value injected by FXMLLoader
+    private ComboBox<Integer> cmbAnno; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtN"
     private TextField txtN; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbUtente"
-    private ComboBox<?> cmbUtente; // Value injected by FXMLLoader
+    private ComboBox<User> cmbUtente; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtX1"
     private TextField txtX1; // Value injected by FXMLLoader
@@ -54,11 +58,36 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	
+    	int n = Integer.parseInt(txtN.getText());
+    	int anno = cmbAnno.getValue();
+    	
+    	model.creaGrafo(n, anno);
+    	
+    	txtResult.appendText("Grafo creato con "+"\n");
+    	txtResult.appendText(" # "+model.nVertici()+" vertici "+"\n");
+    	txtResult.appendText(" # "+model.nArchi()+" archi "+"\n");
+    	
+    	for(User u : model.vertici()) {
+    		cmbUtente.getItems().add(u);
+    	}
+    	
+    	
 
     }
 
     @FXML
     void doUtenteSimile(ActionEvent event) {
+    	
+    	User u = cmbUtente.getValue();
+    	
+    	Map<User,Integer> mappa = model.listaUtentiSimili(u);
+    	
+    	txtResult.appendText("\n");
+    	txtResult.appendText(" Utenti piu simili ad "+u+"\n");
+    	for(User u2 : mappa.keySet()) {
+    		txtResult.appendText(u2 + "         GRADO :" +mappa.get(u2)+"\n");
+    	}
 
     }
     
@@ -79,6 +108,10 @@ public class FXMLController {
         assert cmbUtente != null : "fx:id=\"cmbUtente\" was not injected: check your FXML file 'Scene.fxml'.";
         assert txtX1 != null : "fx:id=\"txtX1\" was not injected: check your FXML file 'Scene.fxml'.";
         assert txtResult != null : "fx:id=\"txtResult\" was not injected: check your FXML file 'Scene.fxml'.";
+        
+        for(int i = 2005; i<=2013;i++) {
+        	cmbAnno.getItems().add(i);
+        }
 
     }
     

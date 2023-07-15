@@ -111,5 +111,70 @@ public class YelpDao {
 		}
 	}
 	
+	public List<User> getVertex(int n){
+		String sql = "SELECT u.* "
+				+ "FROM users u, reviews r "
+				+ "WHERE u.user_id=r.user_id "
+				+ "GROUP BY u.user_id "
+				+ "HAVING COUNT(u.user_id) > ? ";
+		List<User> result = new ArrayList<User>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, n);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+
+				User user = new User(res.getString("user_id"),
+						res.getInt("votes_funny"),
+						res.getInt("votes_useful"),
+						res.getInt("votes_cool"),
+						res.getString("name"),
+						res.getDouble("average_stars"),
+						res.getInt("review_count"));
+				
+				result.add(user);
+			}
+			res.close();
+			st.close();
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
+	
+	public int getEdges(String user1, String user2, int anno){
+		String sql = "SELECT COUNT(r.business_id) as c "
+				+ "FROM reviews r, reviews r1 "
+				+ "WHERE r.user_id = ? AND r1.user_id = ? "
+				+ "AND YEAR(r1.review_date)=YEAR(r.review_date) AND YEAR(r1.review_date) = ? "
+				+ "AND r.business_id=r1.business_id ";
+		int result = 0;
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, user1);
+			st.setString(2, user2);
+			st.setInt(3, anno);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+
+				result = res.getInt("c");
+			}
+			res.close();
+			st.close();
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
 }
